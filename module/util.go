@@ -1,0 +1,68 @@
+package module
+
+import (
+	"context"
+	"log"
+
+	"fmt"
+	"time"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"github.com/gofiber/fiber/v2"
+	"google.golang.org/api/option"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func InitFirebase() (*firebase.App, error) {
+	opt := option.WithCredentialsFile("./keys.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalf("error initializing app: %v\n", err)
+	}
+
+	return app, err
+}
+
+// listenDocument listens to a single document.
+func ListenDocument(ctx *fiber.Ctx, collection string, client *firestore.Client) error {
+	// Set the correct response headers for SSE
+	ctx.Set("Content-Type", "text/event-stream")
+	ctx.Set("Cache-Control", "no-cache")
+	ctx.Set("Connection", "keep-alive")
+
+	// 01
+	// projectID := "project-id"
+	// Сontext with timeout stops listening to changes.
+	timeoutCtx, cancel := context.WithTimeout(ctx.Context(), 30*time.Second)
+	go func() {
+		<-ctx.Context().Done() // Trigger cancel when HTTP client disconnects
+		cancel()
+	}()
+
+	// 02
+	it := client.Collection(collection).Doc("testId").Snapshots(timeoutCtx)
+	for {
+		snap, err := it.Next()
+		// DeadlineExceeded will be returned when ctx is cancelled.
+		if status.Code(err) == codes.DeadlineExceeded {
+			return nil
+		}
+
+		// Handle other errors.
+		if err != nil {
+			return fmt.Errorf("Snapshots.Next: %w", err)
+		}
+
+		// Handle document no longer existing.
+		if !snap.Exists() {
+			fmt.Fprintf(ctx, "Document no longer exists\n")
+			return nil
+		}
+
+		// Write snapshot data to the response writer.
+		fmt.Fprintf(ctx, "Received document snapshot %v\n", snap.Data())
+		fmt.Println(snap.Data())
+	}
+}

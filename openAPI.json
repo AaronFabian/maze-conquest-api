@@ -1,0 +1,37 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Maze Conquest RESTful API",
+		"version": "1.0"
+	},
+	"servers": [{ "description": "Maze Conquest RESTful API", "url": "http://localhost:8000/api/v1" }],
+	"paths": {
+		"/": {
+			"get": {
+				"summary": "API Gateway",
+				"responses": {
+					"200": {
+						"description": "Success accessing API gateway",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"code": {
+											"type": "number"
+										},
+										"status": {
+											"type": "string"
+										},
+										"data": {
+											"type": "object"
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

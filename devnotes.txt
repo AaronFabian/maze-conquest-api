@@ -1,0 +1,44 @@
+// func dispatchKeyFrames() {
+// 	for range time.NewTicker(time.Second * 3).C {
+// 		for _, room := range webrtc.Rooms {
+// 			room.Peers.DispatchKeyFrame()
+// 		}
+// 	}
+// }
+
+// apiV1.Get("/room/:uuid/chat", handlers.RoomChat)
+// apiV1.Get("/stream/:suuid", handlers.Stream)
+// apiV1.Get("/stream/:suuid/websocket", websocket.New(handlers.StreamWebsocket, websocket.Config{
+// 	HandshakeTimeout: 10 * time.Second,
+// }))
+// apiV1.Get("/stream/:suuid/chat/websocket", websocket.New(handlers.StreamChatWebsocket))
+// apiV1.Get("/stream/:suuid/viewer/websocket", websocket.New(handlers.StreamViewerWebsocket))
+
+/*
+	Test use only テスト用
+
+	app.Get("/api/v1/test_realtime_db", func(ctx *fiber.Ctx) error {
+		client, err := firestore.NewClient(context.Background(), "maze-conquest-api")
+		if err != nil {
+			return ctx.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Error creating Firestore client: %v", err))
+		}
+		defer client.Close()
+
+		collection := "users"
+		if err := module.ListenDocument(ctx, collection, client); err != nil {
+			return ctx.Status(fiber.StatusInternalServerError).SendString(fmt.Sprintf("Error listening to document: %v", err))
+		}
+
+		return nil
+	})
+
+	Setting your firebase realtime database
+	01
+	gcloud auth application-default login
+
+	02
+	gcloud config set project YOUR_PROJECT_ID
+
+	03
+	gcloud auth application-default print-access-token
+*/
