@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"maze-conquest-api/controller"
 	"maze-conquest-api/exception"
 	"maze-conquest-api/module"
@@ -95,6 +96,7 @@ func checkEmptyClient() {
 	for {
 		<-ticker.C
 		for roomUUID := range webrtc.Rooms {
+			fmt.Println(roomUUID)
 			room := webrtc.Rooms[roomUUID]
 			totalClient := len(room.Hub.Clients)
 

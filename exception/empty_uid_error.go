@@ -5,10 +5,10 @@ type EmptyUidError struct {
 	Message string
 }
 
-func NewEmptyUidError(code int, error string) *EmptyUidError {
+func NewEmptyUidError() *EmptyUidError {
 	return &EmptyUidError{
-		Code:    code,
-		Message: error,
+		Code:    400,
+		Message: "UID is not provided !",
 	}
 }
 

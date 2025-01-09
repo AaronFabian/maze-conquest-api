@@ -23,7 +23,7 @@ func (controller *UserControllerImpl) FindById(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uid := params["uid"]
 	if uid == "" {
-		panic(exception.NewEmptyUidError(400, "UID is not provided !"))
+		panic(exception.NewEmptyUidError())
 	}
 
 	var user *domain.User = controller.UserRepository.FindById(ctx, uid)
@@ -74,7 +74,7 @@ func (controller *UserControllerImpl) FindStrongestHero(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uid := params["uid"]
 	if uid == "" {
-		panic(exception.NewEmptyUidError(400, "UID is not provided !"))
+		panic(exception.NewEmptyUidError())
 	}
 
 	var heroes []*domain.Hero = controller.UserRepository.GetAllHeroes(ctx, uid)
@@ -99,7 +99,7 @@ func (controller *UserControllerImpl) MazeLevel(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uid := params["uid"]
 	if uid == "" {
-		panic(exception.NewEmptyUidError(400, "UID is not provided !"))
+		panic(exception.NewEmptyUidError())
 	}
 
 	var maze = controller.UserRepository.MazeLevel(ctx, uid)
@@ -117,7 +117,7 @@ func (controller *UserControllerImpl) Power(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uid := params["uid"]
 	if uid == "" {
-		panic(exception.NewEmptyUidError(400, "UID is not provided !"))
+		panic(exception.NewEmptyUidError())
 	}
 
 	var heroes []*domain.Hero = controller.UserRepository.GetAllHeroes(ctx, uid)
