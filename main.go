@@ -55,21 +55,25 @@ func main() {
 	apiV1.Get("/users/:uid", userController.FindById)
 	apiV1.Get("/users/:uid/strongest_hero", userController.FindStrongestHero)
 	apiV1.Get("/users/:uid/maze_level", userController.MazeLevel)
-	apiV1.Get("/users/:uid/power", userController.Power)
+	apiV1.Get("/users/:uid/power", userController.Power) // * Deprecated
 	apiV1.Patch("/users", userController.UpdateItem)
+
+	mixStatsRepository := repository.NewMixStatsRepositoryImpl(firebaseApp)
+	mixStatsController := controller.NewMixStatsController(mixStatsRepository)
+	apiV1.Get("/mix_stats/:uid", mixStatsController.GetUserMixStats)
+	apiV1.Patch("/mix_stats/:uid/power", mixStatsController.UpdateUserPower)
 
 	// * In test mode
 	webrtc.Streams = make(map[string]*webrtc.Room)
 	webrtc.Rooms = make(map[string]*webrtc.Room)
 	apiV1.Get("/room/create", handlers.RoomCreate)
 	apiV1.Get("/room/:uuid", handlers.Room)
+	apiV1.Get("/room/:uuid/chat/websocket", websocket.New(handlers.RoomChatWebsocket))
 	apiV1.Get("/room/:uuid/websocket", websocket.New(handlers.RoomWebsocket, websocket.Config{
 		HandshakeTimeout: 10 * time.Second,
 	}))
 
-	apiV1.Get("/room/:uuid/chat/websocket", websocket.New(handlers.RoomChatWebsocket))
-	apiV1.Get("/room/:uuid/viewer/websocket", websocket.New(handlers.RoomViewerWebsocket))
-
+	// Just a gateway test
 	app.Get("/api/v1", func(ctx *fiber.Ctx) error {
 		return ctx.Status(200).JSON(fiber.Map{
 			"code":   http.StatusOK,
@@ -102,6 +106,7 @@ func checkEmptyClient() {
 
 			// Delete room if no one there
 			if totalClient <= 0 {
+				fmt.Println("[System] Delete ", roomUUID)
 				delete(webrtc.Rooms, roomUUID)
 			}
 		}

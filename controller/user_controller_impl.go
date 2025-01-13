@@ -5,6 +5,7 @@ import (
 	"maze-conquest-api/model/domain"
 	"maze-conquest-api/model/web"
 	"maze-conquest-api/repository"
+	"sort"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -78,13 +79,17 @@ func (controller *UserControllerImpl) FindStrongestHero(ctx *fiber.Ctx) error {
 	}
 
 	var heroes []*domain.Hero = controller.UserRepository.GetAllHeroes(ctx, uid)
-	var userStrongestHero *domain.Hero = nil
-	for _, hero := range heroes {
-		// Here, `hero` is a pointer to a `domain.Hero`, so you can access its fields
-		if userStrongestHero == nil || hero.Level > userStrongestHero.Level {
-			userStrongestHero = hero
+	sort.Slice(heroes, func(i, j int) bool {
+		if heroes[i].Level != heroes[j].Level {
+			// Primary sort: Level in descending order
+			return heroes[i].Level > heroes[j].Level
 		}
-	}
+
+		// Secondary sort: Name alphabetically (ascending)
+		return heroes[i].Name < heroes[j].Name
+	})
+
+	var userStrongestHero *domain.Hero = heroes[0]
 
 	webResponse := web.WebResponse{
 		Code:   200,
@@ -113,6 +118,7 @@ func (controller *UserControllerImpl) MazeLevel(ctx *fiber.Ctx) error {
 	return ctx.Status(200).JSON(webResponse)
 }
 
+// Deprecated: Remove later, WIP
 func (controller *UserControllerImpl) Power(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uid := params["uid"]

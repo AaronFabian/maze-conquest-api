@@ -34,7 +34,7 @@ func (testRepository *TestRepositoryImpl) FindById(ctx *fiber.Ctx, uuid string) 
 		if status.Code(err) == codes.NotFound {
 			// Handle the case where document doesn't exist
 			fmt.Println("user not found: " + err.Error())
-			panic(exception.NewNotFoundError(404, "User with ID '"+uuid+"' not found"))
+			panic(exception.NewNotFoundError("User with ID '" + uuid + "' not found"))
 		}
 
 		// Throw panic for server error

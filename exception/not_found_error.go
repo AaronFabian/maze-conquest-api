@@ -2,12 +2,14 @@ package exception
 
 type NotFoundError struct {
 	Code    int
+	Status  string
 	Message string
 }
 
-func NewNotFoundError(code int, error string) *NotFoundError {
+func NewNotFoundError(error string) *NotFoundError {
 	return &NotFoundError{
-		Code:    code,
+		Code:    404,
+		Status:  "Not Found",
 		Message: error,
 	}
 }

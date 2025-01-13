@@ -35,7 +35,7 @@ func (userRepository *UserRepositoryImpl) FindById(ctx *fiber.Ctx, uid string) *
 		if status.Code(err) == codes.NotFound {
 			// Handle the case where document doesn't exist
 			fmt.Println("user not found: " + err.Error())
-			panic(exception.NewNotFoundError(404, "User with ID '"+uid+"' not found"))
+			panic(exception.NewNotFoundError("User with ID '" + uid + "' not found"))
 		}
 
 		// Throw panic for server error
@@ -123,7 +123,7 @@ func (userRepository *UserRepositoryImpl) GetAllHeroes(ctx *fiber.Ctx, uid strin
 		if status.Code(err) == codes.NotFound {
 			// Handle the case where document doesn't exist
 			fmt.Println("user not found: " + err.Error())
-			panic(exception.NewNotFoundError(404, "User with ID '"+uid+"' not found"))
+			panic(exception.NewNotFoundError("User with ID '" + uid + "' not found"))
 		}
 
 		// Throw panic for server error
@@ -174,7 +174,7 @@ func (userRepository *UserRepositoryImpl) MazeLevel(ctx *fiber.Ctx, uid string) 
 	doc, err := client.Collection("users").Doc(uid).Get(ctx.Context())
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			panic(exception.NewNotFoundError(404, "User with ID '"+uid+"' not found"))
+			panic(exception.NewNotFoundError("User with ID '" + uid + "' not found"))
 		}
 
 		fiber.NewError(fiber.StatusInternalServerError, "Failed to fetch user")

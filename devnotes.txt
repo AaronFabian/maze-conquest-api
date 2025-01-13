@@ -42,3 +42,54 @@
 	03
 	gcloud auth application-default print-access-token
 */
+
+func main() {
+    app := fiber.New()
+
+    // Initialize Firebase Admin SDK
+    opt := option.WithCredentialsFile("path/to/your/firebase-service-account-key.json")
+    firebaseApp, err := firebase.NewApp(context.Background(), nil, opt)
+    if err != nil {
+        log.Fatalf("Error initializing Firebase app: %v", err)
+    }
+
+    authClient, err := firebaseApp.Auth(context.Background())
+    if err != nil {
+        log.Fatalf("Error getting Auth client: %v", err)
+    }
+
+    // Middleware to verify Firebase ID token
+    app.Use(func(c *fiber.Ctx) error {
+        authHeader := c.Get("Authorization")
+        if authHeader == "" {
+            return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Missing Authorization header"})
+        }
+
+        // Extract Bearer token
+        parts := strings.Split(authHeader, " ")
+        if len(parts) != 2 || parts[0] != "Bearer" {
+            return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid Authorization header format"})
+        }
+
+        idToken := parts[1]
+
+        // Verify ID token
+        token, err := authClient.VerifyIDToken(context.Background(), idToken)
+        if err != nil {
+            return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid ID token"})
+        }
+
+        // Token is valid, add user info to context
+        c.Locals("uid", token.UID)
+        return c.Next()
+    })
+
+    // Your update route
+    app.Post("/api/update", func(c *fiber.Ctx) error {
+        uid := c.Locals("uid").(string)
+        // Use the UID to ensure the user is authorized to update their data
+        return c.JSON(fiber.Map{"message": "Update successful", "uid": uid})
+    })
+
+    log.Fatal(app.Listen(":3000"))
+}

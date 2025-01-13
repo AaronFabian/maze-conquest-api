@@ -13,7 +13,7 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	if e, ok := err.(*NotFoundError); ok {
 		return ctx.Status(e.Code).JSON(web.WebResponse{
 			Code:   e.Code,
-			Status: "Not Found",
+			Status: e.Status,
 			Data: fiber.Map{
 				"message": e.Error(),
 			},
@@ -23,7 +23,7 @@ func ErrorHandler(ctx *fiber.Ctx, err error) error {
 	if e, ok := err.(*EmptyUidError); ok {
 		return ctx.Status(e.Code).JSON(web.WebResponse{
 			Code:   e.Code,
-			Status: "Empty Uid",
+			Status: e.Status,
 			Data: fiber.Map{
 				"message": e.Error(),
 			},

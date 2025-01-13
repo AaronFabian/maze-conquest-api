@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -25,13 +26,13 @@ func NewHub(uuid string) *Hub {
 
 func (h *Hub) Run() {
 	// Create a context with a 30-minute timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel() // Ensure resources are cleaned up
 
 	// A helper function to reset the context
 	resetContext := func() {
 		cancel() // Cancel the current context
-		ctx, cancel = context.WithTimeout(context.Background(), 30*time.Minute)
+		ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 	}
 
 	for {
@@ -39,11 +40,15 @@ func (h *Hub) Run() {
 		case <-ctx.Done():
 			// Clear clients in case of any unclean left client
 			for client := range h.Clients {
+				// Tell the client to close the connection
+				client.Send <- []byte("{\"command\": \"idleStop\", \"key\": null}")
+
 				delete(h.Clients, client)
 				close(client.Send)
 			}
 
 			// Context timeout expired, stop the goroutine
+			fmt.Println("Stopping go routine for room UUID: ", h.Uuid)
 			return
 		case client := <-h.register:
 			h.Clients[client] = true

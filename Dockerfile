@@ -1,14 +1,36 @@
-FROM golang:latest
+# FROM golang:1.23.0-bookworm
 
-COPY . /usr/src/app
+# COPY . /usr/src/app
 
-WORKDIR /usr/src/app
+# WORKDIR /usr/src/app
 
-RUN go build -o main .
+# RUN go build -o main .
 
-EXPOSE 8000
+# EXPOSE 8000
 
-CMD ["./main"]
+# CMD ["./main"]
 
 # docker build -t maze-conquest-api .
 # docker run --name maze-conquest-api --publish 8000:8000 maze-conquest-api
+
+FROM golang:1.23.0-bookworm AS build
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download && go mod verify
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o /myapp .
+
+# FROM scratch
+FROM gcr.io/distroless/base-debian10
+
+COPY --from=build /myapp /myapp
+COPY --from=build /app/keys.json /keys.json
+COPY --from=build /app/public /public
+
+ENTRYPOINT ["/myapp"]

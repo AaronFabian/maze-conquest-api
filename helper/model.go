@@ -24,4 +24,20 @@ func NewUser(data map[string]interface{}) *domain.User {
 	return &user
 }
 
+func NewMixStats(data map[string]interface{}) *domain.MixStats {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+
+	mixStats := new(domain.MixStats)
+
+	err = json.Unmarshal(jsonBytes, mixStats)
+	if err != nil {
+		panic(err)
+	}
+
+	return mixStats
+}
+
 // func NewHero() {}
