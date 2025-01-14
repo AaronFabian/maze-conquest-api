@@ -150,13 +150,27 @@ func (userRepository *UserRepositoryImpl) GetAllHeroes(ctx *fiber.Ctx, uid strin
 
 		level, ok := heroData["level"].(int64)
 		if !ok {
-			fmt.Println("[System] Fatal error, 'level' properties is not int64")
-			panic("Fatal error, 'level' properties is not int64")
+			fmt.Println("[System] error, 'level' properties is not int64")
+			level = 1
+		}
+
+		currentExp, ok := heroData["currentExp"].(int64)
+		if !ok {
+			fmt.Println("[System] error, 'currentExp' properties is not int64")
+			currentExp = 0
+		}
+
+		expToLevel, ok := heroData["expToLevel"].(int64)
+		if !ok {
+			fmt.Println("[System] error, 'expToLevel' properties is not int64")
+			expToLevel = 0
 		}
 
 		hero := &domain.Hero{
-			Name:  hero,
-			Level: int(level),
+			Name:       hero,
+			Level:      int(level),
+			CurrentExp: int(currentExp),
+			ExpToLevel: int(expToLevel),
 		}
 		heroes = append(heroes, hero)
 	}
