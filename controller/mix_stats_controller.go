@@ -7,4 +7,5 @@ import (
 type MixStatsController interface {
 	GetUserMixStats(ctx *fiber.Ctx) error
 	UpdateUserPower(ctx *fiber.Ctx) error
+	GetLeaderboard(ctx *fiber.Ctx) error
 }

@@ -1,5 +1,6 @@
 package domain
 
 type MixStats struct {
-	Power int `json:"power" firestore:"power"`
+	Uid   string `json:"uid" firestore:"uid"`
+	Power int    `json:"power" firestore:"power"`
 }

@@ -57,7 +57,7 @@ func (userRepository *UserRepositoryImpl) FindAll(ctx *fiber.Ctx) []*domain.User
 	}
 	defer client.Close()
 
-	docs, err := client.Collection("users").Documents(ctx.Context()).GetAll()
+	docs, err := client.Collection("users").Limit(25).Documents(ctx.Context()).GetAll()
 	if err != nil {
 		panic(err)
 	}

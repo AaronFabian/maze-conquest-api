@@ -78,3 +78,37 @@ func (controller *MixStatsControllerImpl) UpdateUserPower(ctx *fiber.Ctx) error 
 
 	return ctx.Status(200).JSON(webResponse)
 }
+
+type MixStatsCursor struct {
+	UidCursor string `json:"uidCursor"`
+}
+
+func (controller *MixStatsControllerImpl) GetLeaderboard(ctx *fiber.Ctx) error {
+	uidCursor := new(MixStatsCursor)
+	err := ctx.BodyParser(uidCursor)
+	if err != nil {
+		panic(err)
+	}
+
+	// uidCursor.UidCursor will never return null, if the body even we use null at json
+	mixStatsSlice := controller.MixStatsRepository.GetLeaderboard(ctx, uidCursor.UidCursor)
+
+	hasNextPage := false
+	lastUidCursor := ""
+	if len(mixStatsSlice) > 9 {
+		hasNextPage = true
+		lastUidCursor = mixStatsSlice[len(mixStatsSlice)-1].Uid
+	}
+
+	webResponse := web.WebResponse{
+		Code:   200,
+		Status: "OK",
+		Data: fiber.Map{
+			"leaderboard":   mixStatsSlice,
+			"hasNextPage":   hasNextPage,
+			"lastUidCursor": lastUidCursor,
+		},
+	}
+
+	return ctx.Status(200).JSON(webResponse)
+}

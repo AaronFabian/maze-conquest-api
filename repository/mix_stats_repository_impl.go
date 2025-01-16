@@ -43,6 +43,7 @@ func (mixStatsRepository *MixStatsRepositoryImpl) GetMixStats(ctx *fiber.Ctx, ui
 
 	data := doc.Data()
 	userMixStats := helper.NewMixStats(data)
+	userMixStats.Uid = doc.Ref.ID
 
 	return userMixStats
 }
@@ -77,6 +78,48 @@ func (mixStatsRepository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, ui
 	}
 
 	return true
+}
+
+func (mixStatsRepository *MixStatsRepositoryImpl) GetLeaderboard(ctx *fiber.Ctx, uidCursor string) []*domain.MixStats {
+	client, err := mixStatsRepository.FbApp.Firestore(ctx.Context())
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	query := client.Collection("mix_stats").
+		OrderBy("power", firestore.Desc).
+		OrderBy(firestore.DocumentID, firestore.Desc). // Add consistent secondary ordering
+		Limit(10)
+
+	// Apply cursor if provided
+	if uidCursor != "" {
+		// Get the reference document first
+		docSnap, err := client.Collection("mix_stats").Doc(uidCursor).Get(ctx.Context())
+		if err != nil {
+			panic(err)
+		}
+
+		query = query.StartAfter(docSnap)
+	}
+
+	// Execute the query
+	docs, err := query.Documents(ctx.Context()).GetAll()
+	if err != nil {
+		panic(err)
+	}
+
+	var mixStatsSlice []*domain.MixStats
+	for _, doc := range docs {
+		var mixStats domain.MixStats
+		if err := doc.DataTo(&mixStats); err != nil {
+			panic(err)
+		}
+		mixStats.Uid = doc.Ref.ID
+		mixStatsSlice = append(mixStatsSlice, &mixStats)
+	}
+
+	return mixStatsSlice
 }
 
 func (mixStatsRepository *MixStatsRepositoryImpl) GetFirebaseInstance() *firebase.App {

@@ -10,5 +10,6 @@ import (
 type MixStatsRepository interface {
 	GetMixStats(ctx *fiber.Ctx, uid string) *domain.MixStats
 	UpdatePower(ctx *fiber.Ctx, uid string, newPower int) bool
+	GetLeaderboard(ctx *fiber.Ctx, cursor string) []*domain.MixStats
 	GetFirebaseInstance() *firebase.App
 }

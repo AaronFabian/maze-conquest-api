@@ -60,6 +60,7 @@ func main() {
 
 	mixStatsRepository := repository.NewMixStatsRepositoryImpl(firebaseApp)
 	mixStatsController := controller.NewMixStatsController(mixStatsRepository)
+	apiV1.Get("/mix_stats/leaderboard", mixStatsController.GetLeaderboard)
 	apiV1.Get("/mix_stats/:uid", mixStatsController.GetUserMixStats)
 	apiV1.Patch("/mix_stats/:uid/power", mixStatsController.UpdateUserPower)
 
