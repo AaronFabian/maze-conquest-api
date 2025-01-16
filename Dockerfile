@@ -27,7 +27,8 @@ COPY . .
 RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o /myapp .
 
 # FROM scratch
-FROM gcr.io/distroless/base-debian10
+# FROM gcr.io/distroless/base-debian10
+FROM alpine:latest
 
 COPY --from=build /myapp /myapp
 COPY --from=build /app/keys.json /keys.json
