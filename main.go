@@ -9,6 +9,7 @@ import (
 	"maze-conquest-api/module/webrtc"
 	"maze-conquest-api/repository"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,11 +59,18 @@ func main() {
 	apiV1.Get("/users/:uid/power", userController.Power) // * Deprecated
 	apiV1.Patch("/users", userController.UpdateItem)
 
-	mixStatsRepository := repository.NewMixStatsRepositoryImpl(firebaseApp)
+	mixStatsRepository := repository.NewMixStatsRepository(firebaseApp)
 	mixStatsController := controller.NewMixStatsController(mixStatsRepository)
-	apiV1.Get("/mix_stats/leaderboard", mixStatsController.GetLeaderboard)
+	apiV1.Post("/mix_stats/leaderboard", mixStatsController.GetLeaderboard)
 	apiV1.Get("/mix_stats/:uid", mixStatsController.GetUserMixStats)
 	apiV1.Patch("/mix_stats/:uid/power", mixStatsController.UpdateUserPower)
+
+	statisticRepository := repository.NewStatisticRepository(firebaseApp)
+	statisticController := controller.NewStatisticController(statisticRepository)
+	apiV1.Get("/statistics/users", statisticController.GetUsers)
+	apiV1.Get("/statistics/users/percentile_from_level/:uid", statisticController.GetUserPercentileFromLevel)
+	apiV1.Get("/statistics/users/percentile_from_power/:uid", statisticController.GetUserPercentileFromPower)
+	apiV1.Get("/statistics/mix_stats", statisticController.GetMixStats)
 
 	// * In test mode
 	webrtc.Streams = make(map[string]*webrtc.Room)
@@ -88,7 +96,11 @@ func main() {
 	// Check server condition
 	go checkEmptyClient()
 
-	err = app.Listen("localhost:8000")
+	url := "localhost:8000"
+	if os.Getenv("MODE") == "prod" {
+		url = ":8000"
+	}
+	err = app.Listen(url)
 	if err != nil {
 		panic(err)
 	}

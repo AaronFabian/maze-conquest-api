@@ -87,7 +87,8 @@ func (controller *MixStatsControllerImpl) GetLeaderboard(ctx *fiber.Ctx) error {
 	uidCursor := new(MixStatsCursor)
 	err := ctx.BodyParser(uidCursor)
 	if err != nil {
-		panic(err)
+		// fmt.Println(err.Error() == "Unprocessable Entity")
+		panic(err) // This will panic error status code 422
 	}
 
 	// uidCursor.UidCursor will never return null, if the body even we use null at json

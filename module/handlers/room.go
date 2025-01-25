@@ -25,7 +25,7 @@ func Room(ctx *fiber.Ctx) error {
 	}
 
 	ws := "ws"
-	if os.Getenv("ENVIRONMENT") == "PRODUCTION" {
+	if os.Getenv("MODE") == "prod" {
 		ws = "wss"
 	}
 

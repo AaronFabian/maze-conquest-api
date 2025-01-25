@@ -15,6 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const PhotoUrlWhenCrash string = "https://firebasestorage.googleapis.com/v0/b/maze-conquest-api.firebasestorage.app/o/placeholder_when_crash.webp?alt=media&token=3ca45c57-9581-461f-b15a-d17ec055d973"
+
 func InitFirebase() (*firebase.App, error) {
 	opt := option.WithCredentialsFile("./keys.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)

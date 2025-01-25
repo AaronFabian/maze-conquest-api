@@ -11,7 +11,7 @@
 # CMD ["./main"]
 
 # docker build -t maze-conquest-api .
-# docker run --name maze-conquest-api --publish 8000:8000 maze-conquest-api
+# docker run --name maze-conquest-api --publish 8000:8000 maze-conquest-api MODE=prod
 
 FROM golang:1.23.0-bookworm AS build
 
@@ -33,5 +33,8 @@ FROM alpine:latest
 COPY --from=build /myapp /myapp
 COPY --from=build /app/keys.json /keys.json
 COPY --from=build /app/public /public
+
+# Set the MODE environment variable
+ENV MODE=prod
 
 ENTRYPOINT ["/myapp"]

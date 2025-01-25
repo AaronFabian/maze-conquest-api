@@ -15,14 +15,14 @@ type MixStatsRepositoryImpl struct {
 	FbApp *firebase.App
 }
 
-func NewMixStatsRepositoryImpl(fbApp *firebase.App) MixStatsRepository {
+func NewMixStatsRepository(fbApp *firebase.App) MixStatsRepository {
 	return &MixStatsRepositoryImpl{
 		FbApp: fbApp,
 	}
 }
 
-func (mixStatsRepository *MixStatsRepositoryImpl) GetMixStats(ctx *fiber.Ctx, uid string) *domain.MixStats {
-	client, err := mixStatsRepository.FbApp.Firestore(ctx.Context())
+func (repository *MixStatsRepositoryImpl) GetMixStats(ctx *fiber.Ctx, uid string) *domain.MixStats {
+	client, err := repository.FbApp.Firestore(ctx.Context())
 	if err != nil {
 		panic(err)
 	}
@@ -48,12 +48,20 @@ func (mixStatsRepository *MixStatsRepositoryImpl) GetMixStats(ctx *fiber.Ctx, ui
 	return userMixStats
 }
 
-func (mixStatsRepository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, uid string, newPower int) bool {
-	client, err := mixStatsRepository.FbApp.Firestore(ctx.Context())
+func (repository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, uid string, newPower int) bool {
+	client, err := repository.FbApp.Firestore(ctx.Context())
 	if err != nil {
 		panic(err)
 	}
 	defer client.Close()
+
+	// Every time we update mix_stats, we update the user profile as well
+	authClient, err := repository.FbApp.Auth(ctx.Context())
+	if err != nil {
+		panic(err)
+	}
+	user, err := authClient.GetUser(ctx.Context(), uid)
+	helper.PanicForGetAuth(err, uid)
 
 	doc := client.Collection("mix_stats").Doc(uid)
 	_, err = doc.Update(ctx.Context(), []firestore.Update{
@@ -61,13 +69,24 @@ func (mixStatsRepository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, ui
 			Path:  "power",
 			Value: newPower,
 		},
+		{
+			Path:  "ownerUsername",
+			Value: user.DisplayName,
+		},
+		{
+			Path:  "photoUrl",
+			Value: user.PhotoURL,
+		},
 	})
 
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			// Handle the case where document doesn't exist, Do not panic -> create new document
+			// If everything is ok, no need to set uid since it's assign to key document
 			mixStats := domain.MixStats{
-				Power: newPower,
+				Power:         newPower,
+				OwnerUsername: user.DisplayName,
+				PhotoUrl:      user.PhotoURL,
 			}
 			client.Collection("mix_stats").Doc(uid).Set(ctx.Context(), mixStats)
 			return true
@@ -80,8 +99,8 @@ func (mixStatsRepository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, ui
 	return true
 }
 
-func (mixStatsRepository *MixStatsRepositoryImpl) GetLeaderboard(ctx *fiber.Ctx, uidCursor string) []*domain.MixStats {
-	client, err := mixStatsRepository.FbApp.Firestore(ctx.Context())
+func (repository *MixStatsRepositoryImpl) GetLeaderboard(ctx *fiber.Ctx, uidCursor string) []*domain.MixStats {
+	client, err := repository.FbApp.Firestore(ctx.Context())
 	if err != nil {
 		panic(err)
 	}
@@ -111,17 +130,17 @@ func (mixStatsRepository *MixStatsRepositoryImpl) GetLeaderboard(ctx *fiber.Ctx,
 
 	var mixStatsSlice []*domain.MixStats
 	for _, doc := range docs {
-		var mixStats domain.MixStats
-		if err := doc.DataTo(&mixStats); err != nil {
+		mixStats := new(domain.MixStats)
+		if err := doc.DataTo(mixStats); err != nil {
 			panic(err)
 		}
 		mixStats.Uid = doc.Ref.ID
-		mixStatsSlice = append(mixStatsSlice, &mixStats)
+		mixStatsSlice = append(mixStatsSlice, mixStats)
 	}
 
 	return mixStatsSlice
 }
 
-func (mixStatsRepository *MixStatsRepositoryImpl) GetFirebaseInstance() *firebase.App {
-	return mixStatsRepository.FbApp
+func (repository *MixStatsRepositoryImpl) GetFirebaseInstance() *firebase.App {
+	return repository.FbApp
 }
