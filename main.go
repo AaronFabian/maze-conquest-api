@@ -1,14 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"maze-conquest-api/controller"
 	"maze-conquest-api/exception"
 	"maze-conquest-api/module"
-	"maze-conquest-api/module/handlers"
-	"maze-conquest-api/module/webrtc"
 	"maze-conquest-api/repository"
-	"net/http"
 	"os"
 	"time"
 
@@ -72,39 +68,15 @@ func main() {
 	apiV1.Get("/statistics/users/percentile_from_power/:uid", statisticController.GetUserPercentileFromPower)
 	apiV1.Get("/statistics/mix_stats", statisticController.GetMixStats)
 
-	// * In test mode
-	webrtc.Streams = make(map[string]*webrtc.Room)
-	webrtc.Rooms = make(map[string]*webrtc.Room)
-	apiV1.Use("/ws", func(c *fiber.Ctx) error {
-		// IsWebSocketUpgrade returns true if the client
-		// requested upgrade to the WebSocket protocol.
-		fmt.Println(websocket.IsWebSocketUpgrade(c))
-		if websocket.IsWebSocketUpgrade(c) {
-			c.Locals("allowed", true)
-			return c.Next()
-		}
-		return fiber.ErrUpgradeRequired
-	})
-	apiV1.Get("/room/create", handlers.RoomCreate)
-	apiV1.Get("/room/:uuid", handlers.Room)
-	apiV1.Get("/room/:uuid/chat/websocket", websocket.New(handlers.RoomChatWebsocket))
-	apiV1.Get("/room/:uuid/websocket", websocket.New(handlers.RoomWebsocket, websocket.Config{
-		HandshakeTimeout: 10 * time.Second,
-	}))
+	// * Websocket in test mode
+	apiV1.Use("/ws", module.SocketUpgradeMidl)
+	apiV1.Get("/ws/:id", websocket.New(module.SocketImpl))
 
 	// Just a gateway test
-	app.Get("/api/v1", func(ctx *fiber.Ctx) error {
-		return ctx.Status(200).JSON(fiber.Map{
-			"code":   http.StatusOK,
-			"status": "OK",
-			"data": fiber.Map{
-				"message": "Welcome to API Gateway",
-			},
-		})
-	})
+	app.Get("/api/v1", testController.Gateway)
 
 	// Check server condition
-	go checkEmptyClient()
+	go module.CheckEmptyClient()
 
 	url := "localhost:8000"
 	if os.Getenv("MODE") == "prod" {
@@ -113,27 +85,5 @@ func main() {
 	err = app.Listen(url)
 	if err != nil {
 		panic(err)
-	}
-}
-
-func checkEmptyClient() {
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		<-ticker.C
-		for roomUUID := range webrtc.Rooms {
-			fmt.Println(roomUUID)
-			room := webrtc.Rooms[roomUUID]
-			totalClient := len(room.Hub.Clients)
-
-			// Delete room if no one there
-			if totalClient <= 0 {
-				fmt.Println("[System] Delete ", roomUUID)
-				delete(webrtc.Rooms, roomUUID)
-			}
-		}
-
-		// fmt.Println("Total Room created: ", len(webrtc.Rooms))
 	}
 }

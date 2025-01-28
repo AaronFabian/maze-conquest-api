@@ -18,6 +18,16 @@ func NewTestController(testRepository repository.TestRepository) TestController 
 	}
 }
 
+func (controller *TestControllerImpl) Gateway(ctx *fiber.Ctx) error {
+	return ctx.Status(200).JSON(fiber.Map{
+		"code":   200,
+		"status": "OK",
+		"data": fiber.Map{
+			"message": "Welcome to API Gateway",
+		},
+	})
+}
+
 func (controller *TestControllerImpl) FindById(ctx *fiber.Ctx) error {
 	params := ctx.AllParams()
 	uuid := params["uid"]
