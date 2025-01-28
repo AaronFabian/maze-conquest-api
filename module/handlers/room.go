@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"maze-conquest-api/module/chat"
 	"maze-conquest-api/module/webrtc"
@@ -29,7 +30,10 @@ func Room(ctx *fiber.Ctx) error {
 		ws = "wss"
 	}
 
-	uuid, suuid, _ := createOrGetRoom(uuid)
+	uuid, suuid, _, err := createOrGetRoom(uuid)
+	if err != nil {
+		panic(err)
+	}
 	return ctx.JSON(fiber.Map{
 		"RoomWebsocketAddr":   fmt.Sprintf("%s://%s/api/v1/room/%s/websocket", ws, ctx.Hostname(), uuid),
 		"RoomLink":            fmt.Sprintf("%s://%s/api/v1/room/%s", ctx.Protocol(), ctx.Hostname(), uuid),
@@ -46,36 +50,34 @@ func RoomWebsocket(c *websocket.Conn) {
 		return
 	}
 
-	_, _, room := createOrGetRoom(uuid)
+	_, _, room, err := createOrGetRoom(uuid)
+	if err != nil {
+		panic(err)
+	}
 	webrtc.RoomConn(c, room.Peers)
 }
 
-func createOrGetRoom(uuid string) (string, string, *webrtc.Room) {
+func createOrGetRoom(uuid string) (string, string, *webrtc.Room, error) {
+	if uuid == "" {
+		return "", "", nil, errors.New("invalid UUID")
+	}
+
 	webrtc.RoomsLock.Lock()
 	defer webrtc.RoomsLock.Unlock()
 
-	h := sha256.New()
-	h.Write([]byte(uuid))
-	suuid := fmt.Sprintf("%x", h.Sum(nil))
+	suuid := fmt.Sprintf("%x", sha256.Sum256([]byte(uuid)))
 
-	// If Room already there
 	if room := webrtc.Rooms[uuid]; room != nil {
 		if len(room.Hub.Clients) > 0 {
-			if _, ok := webrtc.Streams[suuid]; !ok {
-				webrtc.Streams[suuid] = room
-			}
-			return uuid, suuid, room
-		} else {
-			delete(webrtc.Rooms, uuid)
+			webrtc.Streams[suuid] = room
+			return uuid, suuid, room, nil
 		}
+		delete(webrtc.Rooms, uuid)
 	}
 
-	// If room not found / Create new room
 	hub := chat.NewHub(uuid)
-	p := &webrtc.Peers{}
-	// p.TrackLocals = make(map[string]*webrtc.TrackLocalStaticRTP)
 	room := &webrtc.Room{
-		Peers: p,
+		Peers: &webrtc.Peers{},
 		Hub:   hub,
 	}
 
@@ -83,7 +85,8 @@ func createOrGetRoom(uuid string) (string, string, *webrtc.Room) {
 	webrtc.Streams[suuid] = room
 
 	go hub.Run()
-	return uuid, suuid, room
+
+	return uuid, suuid, room, nil
 }
 
 func RoomViewerWebsocket(c *websocket.Conn) {

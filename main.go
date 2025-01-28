@@ -75,6 +75,16 @@ func main() {
 	// * In test mode
 	webrtc.Streams = make(map[string]*webrtc.Room)
 	webrtc.Rooms = make(map[string]*webrtc.Room)
+	apiV1.Use("/ws", func(c *fiber.Ctx) error {
+		// IsWebSocketUpgrade returns true if the client
+		// requested upgrade to the WebSocket protocol.
+		fmt.Println(websocket.IsWebSocketUpgrade(c))
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
 	apiV1.Get("/room/create", handlers.RoomCreate)
 	apiV1.Get("/room/:uuid", handlers.Room)
 	apiV1.Get("/room/:uuid/chat/websocket", websocket.New(handlers.RoomChatWebsocket))

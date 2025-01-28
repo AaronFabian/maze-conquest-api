@@ -38,3 +38,5 @@ COPY --from=build /app/public /public
 ENV MODE=prod
 
 ENTRYPOINT ["/myapp"]
+
+# gcloud builds submit --tag gcr.io/maze-conquest-api/maze-conquest-api .
