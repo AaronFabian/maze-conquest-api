@@ -96,6 +96,8 @@ func CheckEmptyClient() {
 			fmt.Println(room)
 			count++
 		}
-		fmt.Println("Online rooms: " + strconv.Itoa(count))
+		if count > 0 {
+			fmt.Println("Online rooms: " + strconv.Itoa(count))
+		}
 	}
 }
