@@ -53,11 +53,12 @@ func main() {
 	apiV1.Get("/users/:uid/strongest_hero", userController.FindStrongestHero)
 	apiV1.Get("/users/:uid/maze_level", userController.MazeLevel)
 	apiV1.Get("/users/:uid/power", userController.Power) // * Deprecated
+	apiV1.Get("/users/:uid/is_exist", userController.IsExist)
 	apiV1.Patch("/users", userController.UpdateItem)
 
 	mixStatsRepository := repository.NewMixStatsRepository(firebaseApp)
 	mixStatsController := controller.NewMixStatsController(mixStatsRepository)
-	apiV1.Post("/mix_stats/leaderboard", mixStatsController.GetLeaderboard)
+	apiV1.Post("/mix_stats/leaderboard", mixStatsController.GetLeaderboard) // * Need to change the name
 	apiV1.Get("/mix_stats/:uid", mixStatsController.GetUserMixStats)
 	apiV1.Patch("/mix_stats/:uid/power", mixStatsController.UpdateUserPower)
 
@@ -66,6 +67,7 @@ func main() {
 	apiV1.Get("/statistics/users", statisticController.GetUsers)
 	apiV1.Get("/statistics/users/percentile_from_level/:uid", statisticController.GetUserPercentileFromLevel)
 	apiV1.Get("/statistics/users/percentile_from_power/:uid", statisticController.GetUserPercentileFromPower)
+	apiV1.Get("/statistics/users/leaderboard/:uid", statisticController.GetUserLeaderboard)
 	apiV1.Get("/statistics/mix_stats", statisticController.GetMixStats)
 
 	// * Websocket in test mode

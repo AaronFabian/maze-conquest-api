@@ -72,3 +72,21 @@ func (controller *StatisticControllerImpl) GetUserPercentileFromPower(ctx *fiber
 
 	return ctx.Status(200).JSON(webResponse)
 }
+
+func (controller *StatisticControllerImpl) GetUserLeaderboard(ctx *fiber.Ctx) error {
+	params := ctx.AllParams()
+	uid := params["uid"]
+	if uid == "" {
+		panic(exception.NewEmptyUidError())
+	}
+
+	leaderboard := controller.StatisticRepository.GetUserLeaderboard(ctx, uid)
+
+	leaderboardResponse := &web.LeaderboardResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   leaderboard,
+	}
+
+	return ctx.Status(200).JSON(leaderboardResponse)
+}

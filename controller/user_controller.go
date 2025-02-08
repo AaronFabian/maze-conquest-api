@@ -5,10 +5,11 @@ import (
 )
 
 type UserController interface {
-	UpdateItem(ctx *fiber.Ctx) error
-	FindAll(ctx *fiber.Ctx) error
-	FindById(ctx *fiber.Ctx) error
-	FindStrongestHero(ctx *fiber.Ctx) error
-	MazeLevel(ctx *fiber.Ctx) error
-	Power(ctx *fiber.Ctx) error
+	UpdateItem(*fiber.Ctx) error
+	FindAll(*fiber.Ctx) error
+	FindById(*fiber.Ctx) error
+	FindStrongestHero(*fiber.Ctx) error
+	MazeLevel(*fiber.Ctx) error
+	Power(*fiber.Ctx) error
+	IsExist(*fiber.Ctx) error
 }

@@ -11,4 +11,5 @@ type StatisticRepository interface {
 	GetMixStats(ctx *fiber.Ctx) []*domain.Statistic
 	GetUserPercentileFromLevel(ctx *fiber.Ctx, uid string) []*domain.Statistic
 	GetUserPercentileFromPower(ctx *fiber.Ctx, uid string) []*domain.Statistic
+	GetUserLeaderboard(ctx *fiber.Ctx, uid string) *domain.Leaderboard
 }

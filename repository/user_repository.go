@@ -12,4 +12,5 @@ type UserRepository interface {
 	UpdateItem(ctx *fiber.Ctx, uid string, itemName string, quantity int) *domain.User
 	GetAllHeroes(ctx *fiber.Ctx, uid string) []*domain.Hero
 	MazeLevel(ctx *fiber.Ctx, uid string) *domain.World
+	IsExist(ctx *fiber.Ctx, uid string) bool
 }
