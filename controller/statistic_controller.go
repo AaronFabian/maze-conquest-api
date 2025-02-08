@@ -9,4 +9,5 @@ type StatisticController interface {
 	GetMixStats(*fiber.Ctx) error
 	GetUserPercentileFromLevel(*fiber.Ctx) error
 	GetUserPercentileFromPower(*fiber.Ctx) error
+	GetUserLeaderboard(*fiber.Ctx) error
 }

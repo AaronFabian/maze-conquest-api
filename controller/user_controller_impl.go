@@ -152,3 +152,19 @@ func (controller *UserControllerImpl) Power(ctx *fiber.Ctx) error {
 
 	return ctx.Status(200).JSON(webResponse)
 }
+
+func (controller *UserControllerImpl) IsExist(ctx *fiber.Ctx) error {
+	params := ctx.AllParams()
+	uid := params["uid"]
+	if uid == "" {
+		panic(exception.NewEmptyUidError())
+	}
+
+	isExist := controller.UserRepository.IsExist(ctx, uid)
+
+	webResponse := web.NewWebResponse(200, "OK", fiber.Map{
+		"userExist": isExist,
+	})
+
+	return ctx.Status(200).JSON(webResponse)
+}

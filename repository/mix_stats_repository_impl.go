@@ -99,6 +99,7 @@ func (repository *MixStatsRepositoryImpl) UpdatePower(ctx *fiber.Ctx, uid string
 	return true
 }
 
+// * Need to change the name
 func (repository *MixStatsRepositoryImpl) GetLeaderboard(ctx *fiber.Ctx, uidCursor string) []*domain.MixStats {
 	client, err := repository.FbApp.Firestore(ctx.Context())
 	if err != nil {

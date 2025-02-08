@@ -174,3 +174,97 @@ func (repository *StatisticRepositoryImpl) GetUserPercentileFromPower(ctx *fiber
 	merged := append(globalUserStatistic, &domain.Statistic{Value: powerValue, Label: "user"})
 	return merged
 }
+
+func (repository *StatisticRepositoryImpl) GetUserLeaderboard(ctx *fiber.Ctx, uid string) *domain.Leaderboard {
+	client, err := repository.FbApp.Firestore(ctx.Context())
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	// Create reference so we don't write the same code
+	leaderboardDocRef := client.Collection("statistics").Doc("leaderboard")
+
+	// Get the specific user info
+	userDoc, err := leaderboardDocRef.Collection("users").Doc(uid).Get(ctx.Context())
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			// Handle the case where document doesn't exist
+
+			// Handle when the User account are there but the data not yet created
+			client, _ := repository.FbApp.Auth(ctx.Context())
+			_, err := client.GetUser(ctx.Context(), uid)
+			if err != nil {
+				panic(exception.NewNotFoundError("User with ID '" + uid + "' not found"))
+			}
+
+			panic(exception.NewNotFoundError("Data not yet created"))
+		}
+
+		// Throw panic for server error
+		panic(fmt.Sprintf("Failed to fetch user; Unhandled error while get user leaderboard %s", uid))
+	}
+
+	// Get the global info
+	leaderboardDoc, err := leaderboardDocRef.Get(ctx.Context())
+	if err != nil {
+		panic(err)
+	}
+
+	// Get the field data
+	userData := userDoc.Data()
+	leaderboardData := leaderboardDoc.Data()
+
+	// Extract the data
+	/*
+		fmt.Println(reflect.TypeOf(userData["percentile"]), "userData['percentile']")
+		fmt.Println(reflect.TypeOf(userData["rank"]), "userData['rank']")
+		fmt.Println(reflect.TypeOf(userData["total"]), "userData['total']")
+		fmt.Println(reflect.TypeOf(leaderboardData["average"]), "leaderboardData['average']")
+		fmt.Println(reflect.TypeOf(leaderboardData["len"]), "leaderboardData['len']")
+	*/
+
+	percentile, ok := userData["percentile"].(float64)
+	if !ok {
+		panic("Error while check the .percentile; type not float64")
+	}
+
+	rankFloat, ok := userData["rank"].(int64)
+	if !ok {
+		panic("Error while check .rank; type not int64")
+	}
+	rank := int(rankFloat)
+
+	total, ok := userData["total"].(float64)
+	if !ok {
+		panic("Error while check .total; type not float64")
+	}
+
+	var average float64
+	switch v := leaderboardData["average"].(type) {
+	case int:
+		average = float64(v) // Convert int to float64
+	case int64:
+		average = float64(v) // Convert int64 to float64
+	case float64:
+		average = v // Already float64, no conversion needed
+	default:
+		panic(fmt.Sprintf("unexpected type for average: %T", v))
+	}
+
+	leaderboardLength64, ok := leaderboardData["len"].(int64)
+	if !ok {
+		panic("Error while check .len; ;type not int64")
+	}
+	leaderboardLength := int(leaderboardLength64)
+
+	leaderboard := &domain.Leaderboard{
+		GlobalAverage:  average,
+		TotalUser:      leaderboardLength,
+		UserPercentile: percentile,
+		UserRank:       rank,
+		UserTotalPower: total,
+	}
+
+	return leaderboard
+}

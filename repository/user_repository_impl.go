@@ -209,3 +209,13 @@ func (userRepository *UserRepositoryImpl) MazeLevel(ctx *fiber.Ctx, uid string) 
 
 	return &world
 }
+
+func (repository *UserRepositoryImpl) IsExist(ctx *fiber.Ctx, uid string) bool {
+	// Handle when the User account are there but the data not yet created
+	authClient, _ := repository.FbApp.Auth(ctx.Context())
+	_, err := authClient.GetUser(ctx.Context(), uid)
+
+	isExist := err == nil
+
+	return isExist
+}
