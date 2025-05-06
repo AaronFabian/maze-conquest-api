@@ -4,10 +4,24 @@
 		"title": "Maze Conquest RESTful API",
 		"version": "1.0"
 	},
-	"servers": [{ "description": "Maze Conquest RESTful API", "url": "http://localhost:8000/api/v1" }],
+	"servers": [
+		{ "description": "Maze Conquest RESTful API", "url": "http://localhost:8000/api/v1" },
+		{ "description": "Maze Conquest Production RESTful API", "url": "https://imakeyouhappy.site/api/v1" }
+	],
+	"tags": [
+		{
+			"name": "gateway",
+			"description": "API Gateway endpoints for connection testing and health checks"
+		},
+		{
+			"name": "user",
+			"description": "Operation about user"
+		}
+	],
 	"paths": {
 		"/": {
 			"get": {
+				"tags": ["gateway"],
 				"summary": "API Gateway",
 				"responses": {
 					"200": {
@@ -23,7 +37,53 @@
 											"type": "string"
 										},
 										"data": {
-											"type": "object"
+											"type": "object",
+											"properties": {
+												"message": {
+													"type": "string"
+												}
+											},
+											"example": {
+												"message": "OK"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/": {
+			"get": {
+				"tags": ["user"],
+				"summary": "Get all users (limit to 25 users)",
+				"responses": {
+					"200": {
+						"description": "Success get all users",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"code": {
+											"type": "number"
+										},
+										"status": {
+											"type": "string"
+										},
+										"data": {
+											"type": "array",
+											"items": {
+												"properties": {
+													"username": {
+														"type": "string"
+													}
+												},
+												"example": {
+													"username": "Game Master"
+												}
+											}
 										}
 									}
 								}
