@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	module.EnvConfig()
+
 	app := fiber.New(fiber.Config{
 		IdleTimeout:             time.Second * 5,
 		ReadTimeout:             time.Second * 5,
@@ -24,7 +26,7 @@ func main() {
 		ErrorHandler:            exception.ErrorHandler,
 	})
 
-	// middleware
+	// Middleware
 	app.Use(cors.New())
 	// app.Use(csrf.New())
 	app.Use(recover.New(recover.Config{
