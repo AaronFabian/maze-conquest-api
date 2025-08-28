@@ -31,7 +31,7 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Set up Firebase keys
-        run: echo "${{ secrets.FIREBASE_KEYS }}" > keys.json
+        run: echo '${{ secrets.FIREBASE_KEYS }}' > keys.json
 
       - name: Install dependencies
         run: go mod tidy
@@ -41,7 +41,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          echo deploy to google cloud artifact Registry with SERVICE_NAME $SERVICE_NAME
+          echo deploy to google cloud artifact Registry with SERVICE_NAME ${{ SERVICE_NAME }}
           gcloud builds submit --tag $DOCKER_IMAGE_URL:latest .
 
       # - name: Deploy to Cloud Run
