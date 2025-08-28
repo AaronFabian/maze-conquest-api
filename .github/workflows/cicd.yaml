@@ -31,7 +31,7 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Set up Firebase keys
-        run: echo '${{ secrets.FIREBASE_KEYS }}' > ./keys.json
+        run: echo '${{ secrets.FIREBASE_KEYS }}' > ./build-keys.json
 
       - name: Install dependencies
         run: go mod tidy
@@ -42,7 +42,7 @@ jobs:
           gcloud builds submit --tag $DOCKER_IMAGE_URL .
 
       - name: Clean up keys
-        run: rm ./keys.json
+        run: rm ./build-keys.json
 
       # - name: Deploy to Cloud Run
       #   run: |
