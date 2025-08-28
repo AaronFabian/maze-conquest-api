@@ -31,18 +31,18 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Set up Firebase keys
-        run: echo '${{ secrets.FIREBASE_KEYS }}' > keys.json
+        run: echo '${{ secrets.FIREBASE_KEYS }}' > ./keys.json
 
       - name: Install dependencies
         run: go mod tidy
-
-      - name: Build
-        run: go build main.go
 
       - name: Build and Push Docker Image
         run: |
           echo deploy to google cloud artifact Registry with SERVICE_NAME $SERVICE_NAME
           gcloud builds submit --tag $DOCKER_IMAGE_URL .
+
+      - name: Clean up keys
+        run: rm ./keys.json
 
       # - name: Deploy to Cloud Run
       #   run: |
