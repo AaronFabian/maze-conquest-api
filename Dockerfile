@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o /myapp .
 FROM alpine:latest
 
 COPY --from=build /myapp /myapp
-COPY --from=build /app/keys.json /build-keys.json
+COPY --from=build /app/build-keys.json /build-keys.json
 COPY --from=build /app/public /public
 
 # Set the MODE environment variable
