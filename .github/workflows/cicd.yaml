@@ -44,11 +44,11 @@ jobs:
       - name: Clean up keys
         run: rm ./build-keys.json
 
-      # - name: Deploy to Cloud Run
-      #   run: |
-      #     echo "Deploying to Cloud Run with SERVICE_NAME $SERVICE_NAME"
-      #     gcloud run deploy $SERVICE_NAME \
-      #       --image ${{ env.DOCKER_IMAGE_URL }}:latest \
-      #       --platform managed \
-      #       --region asia-northeast1 \
-      #       --allow-unauthenticated
+      - name: Deploy to Cloud Run
+        run: |
+          echo "Deploying to Cloud Run with SERVICE_NAME $SERVICE_NAME"
+          gcloud run deploy $SERVICE_NAME \
+            --image ${{ env.DOCKER_IMAGE_URL }}:latest \
+            --platform managed \
+            --region asia-northeast1 \
+            --allow-unauthenticated
