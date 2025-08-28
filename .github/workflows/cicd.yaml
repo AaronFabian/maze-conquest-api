@@ -42,7 +42,7 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           echo deploy to google cloud artifact Registry with SERVICE_NAME $SERVICE_NAME
-          gcloud builds submit --tag $DOCKER_IMAGE_URL:latest .
+          gcloud builds submit --tag $DOCKER_IMAGE_URL .
 
       # - name: Deploy to Cloud Run
       #   run: |
