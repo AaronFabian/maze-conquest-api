@@ -121,9 +121,18 @@ func (repository *StatisticRepositoryImpl) GetUserPercentileFromLevel(ctx *fiber
 	}
 
 	data := doc.Data()
-	powerValue, ok := data["percentile"].(float64)
-	if !ok {
-		panic("Error: data['percentile'] as it does not have an float64 value")
+	var powerValue float64
+	switch v := data["percentile"].(type) {
+	case int:
+		powerValue = float64(v)
+	case int64:
+		powerValue = float64(v)
+	case float32:
+		powerValue = float64(v)
+	case float64:
+		powerValue = v
+	default:
+		panic(fmt.Sprintf("unexpected type for percentile: %T", v))
 	}
 
 	// 02 Get global statistic for user model
@@ -162,16 +171,23 @@ func (repository *StatisticRepositoryImpl) GetUserPercentileFromPower(ctx *fiber
 	}
 
 	data := doc.Data()
-	powerValue, ok := data["percentile"].(float64)
-	if !ok {
-		panic("Error: data['percentile'] as it does not have an float64 value")
+	var percentile float64
+	switch v := data["percentile"].(type) {
+	case int:
+		percentile = float64(v) // Convert int to float64
+	case int64:
+		percentile = float64(v) // Convert int64 to float64
+	case float64:
+		percentile = v // Already float64, no conversion needed
+	default:
+		panic(fmt.Sprintf("unexpected type for percentile: %T", v))
 	}
 
 	// 02 Get global statistic for user model
 	globalUserStatistic := repository.GetMixStats(ctx)
 
 	// 03 Combine
-	merged := append(globalUserStatistic, &domain.Statistic{Value: powerValue, Label: "user"})
+	merged := append(globalUserStatistic, &domain.Statistic{Value: percentile, Label: "user"})
 	return merged
 }
 
@@ -235,9 +251,18 @@ func (repository *StatisticRepositoryImpl) GetUserLeaderboard(ctx *fiber.Ctx, ui
 	}
 	rank := int(rankFloat)
 
-	total, ok := userData["total"].(float64)
-	if !ok {
-		panic("Error while check .total; type not float64")
+	var total float64
+	switch v := userData["total"].(type) {
+	case int:
+		total = float64(v)
+	case int64:
+		total = float64(v)
+	case float32:
+		total = float64(v)
+	case float64:
+		total = v
+	default:
+		panic(fmt.Sprintf("unexpected type for total: %T", v))
 	}
 
 	var average float64
