@@ -1,0 +1,54 @@
+name: Deploy to Cloud Run
+
+env:
+  SERVICE_NAME: maze-conquest-api
+  PROJECT_ID: maze-conquest-api
+  REGION: asia-northeast1
+  DOCKER_IMAGE_URL: gcr.io/maze-conquest-api/maze-conquest-api
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x' # matches go.mod version
+
+      - name: Google Cloud Auth / connect to google account
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY_MAZE_CONQUEST_API }}'
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Firebase keys
+        run: echo "${{ secrets.FIREBASE_KEYS }}" > keys.json
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build
+        run: go build main.go
+
+      - name: Build and Push Docker Image
+        run: |
+          echo deploy to google cloud artifact Registry with SERVICE_NAME $SERVICE_NAME
+          gcloud builds submit --tag $DOCKER_IMAGE_URL:latest .
+
+      # - name: Deploy to Cloud Run
+      #   run: |
+      #     echo "Deploying to Cloud Run with SERVICE_NAME $SERVICE_NAME"
+      #     gcloud run deploy $SERVICE_NAME \
+      #       --image ${{ env.DOCKER_IMAGE_URL }}:latest \
+      #       --platform managed \
+      #       --region asia-northeast1 \
+      #       --allow-unauthenticated
