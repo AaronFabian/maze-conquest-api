@@ -3,6 +3,7 @@ package module
 import (
 	"context"
 	"log"
+	"os"
 
 	"fmt"
 	"time"
@@ -18,7 +19,19 @@ import (
 const PhotoUrlWhenCrash string = "https://firebasestorage.googleapis.com/v0/b/maze-conquest-api.firebasestorage.app/o/placeholder_when_crash.webp?alt=media&token=3ca45c57-9581-461f-b15a-d17ec055d973"
 
 func InitFirebase() (*firebase.App, error) {
-	opt := option.WithCredentialsFile("./keys.json")
+	/*
+		keys.json is only used for development.
+
+		In production, keys.json is not included. Instead, the app will use build-keys.json.
+
+		keys.json and build-keys.json contain the same information.
+	*/
+	var opt option.ClientOption
+	if os.Getenv("MODE") == "prod" {
+		opt = option.WithCredentialsFile("./build-keys.json")
+	} else {
+		opt = option.WithCredentialsFile("./keys.json")
+	}
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
